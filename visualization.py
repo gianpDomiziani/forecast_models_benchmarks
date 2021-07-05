@@ -35,31 +35,31 @@ for state_id in tqdm(STATE_ID):
 plt.legend(states.keys())
 plt.show()
 
-# # store level
-# store_df = train_df.groupby(['date', 'store_id'])['sales'].sum().to_frame().reset_index()
-# print(store_df.head(20))
-# # print(store_df['sales'].head())
-# STORE_ID = list(store_df['store_id'].unique())
-# plt.figure()
-# stores = {}
-# for store_id in tqdm(STORE_ID):
-#     stores[f'{store_id}'] = store_df[store_df['store_id'] == store_id]
-#     plt.plot(stores.get(f'{store_id}')['date'], stores.get(f'{store_id}')['sales'])
-# plt.legend(stores.keys())
-# plt.show()
-#
-# # store and category level
-# train_df['store_category_id'] = train_df.apply(lambda x: f"{x['store_id']}_{x['cat_id']}", axis=1)
-# # store_cat_df2 = df.pivot(index='date', columns='store_category_id', values='sales')
-# # print(store_df2.head(20))
-# store_cat_df = train_df.groupby('store_category_id')['sales'].sum().to_frame().reset_index()
-# print(store_df.head(20))
-# STORE_CAT_ID = list(store_cat_df['store_category_id'].unique())
-# plt.figure()
-# stores_cat = {}
-# for store_cat_id in tqdm(STORE_CAT_ID):
-#     stores_cat[f'{store_cat_id}'] = store_cat_df[store_cat_df['store_category_id'] == store_cat_id]
-#     plt.plot(stores_cat.get(f'{store_cat_id}')['date'], stores_cat.get(f'{store_cat_id}')['sales'])
-# plt.legend(stores_cat.keys())
-# plt.show()
+# store level
+store_df = train_df.groupby(['date', 'store_id'])['sales'].sum().to_frame().reset_index()
+print(store_df.head(20))
+# print(store_df['sales'].head())
+STORE_ID = list(store_df['store_id'].unique())
+plt.figure()
+stores = {}
+for store_id in tqdm(STORE_ID):
+    stores[f'{store_id}'] = store_df[store_df['store_id'] == store_id]
+    plt.plot(stores.get(f'{store_id}')['date'], stores.get(f'{store_id}')['sales'])
+plt.legend(stores.keys())
+plt.show()
+
+# store and category level
+train_df['store_category_id'] = train_df.apply(lambda x: f"{x['store_id']}_{x['cat_id']}", axis=1)
+# store_cat_df2 = df.pivot(index='date', columns='store_category_id', values='sales')
+# print(store_df2.head(20))
+store_cat_df = train_df.groupby('store_category_id')['sales'].sum().to_frame().reset_index()
+print(store_df.head(20))
+STORE_CAT_ID = list(store_cat_df['store_category_id'].unique())
+plt.figure()
+stores_cat = {}
+for store_cat_id in tqdm(STORE_CAT_ID):
+    stores_cat[f'{store_cat_id}'] = store_cat_df[store_cat_df['store_category_id'] == store_cat_id]
+    plt.plot(stores_cat.get(f'{store_cat_id}')['date'], stores_cat.get(f'{store_cat_id}')['sales'])
+plt.legend(stores_cat.keys())
+plt.show()
 
