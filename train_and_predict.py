@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import itertools
 from time import time
-from visualization import total_df, states
+from visualization import total_df, states, stores, stores_cat
 
 
 TIME_HORIZON = 28
@@ -97,10 +97,10 @@ fbprophet_predict(total_df, TIME_HORIZON,
                   results_csv='tuning_results\\total_level_dailyseasonailty_results.csv',
                   path='predictions\\total_level_dailyseasonailty_predictions.csv')
 
-# for state in states:
-#     print(state)
-#     state_df = states.get(state)[['date', 'sales']]
-#     fbprophet_train(state_df, TIME_HORIZON, END_TRAIN, path=f'tuning_results\\{state}_results.csv')
+for state in states:
+    print(state)
+    state_df = states.get(state)[['date', 'sales']]
+    fbprophet_train(state_df, TIME_HORIZON, END_TRAIN, path=f'tuning_results\\{state}_results.csv')
 
 
 
