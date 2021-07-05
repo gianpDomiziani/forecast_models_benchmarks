@@ -48,7 +48,7 @@ grid_df['d'] = grid_df['d'].apply(lambda x: 'd_' + str(x))
 # print(grid_df.tail())
 # print(holdout_df.head())
 
-# add rows for test
+# add rows for test (not sure if needed)
 print('Adding test days')
 add_grid = pd.DataFrame()
 for i in range(1, TIME_HORIZON + 1):
@@ -90,10 +90,10 @@ grid_df = merge_by_concat(grid_df, calendar_df[['wm_yr_wk', 'd']], ['d'])  # mat
 grid_df = grid_df[grid_df['wm_yr_wk'] >= grid_df['release']].reset_index(drop=True)  # for each product only keep if day is after release date -> delete useless rows
 # print(grid_df.head(20))
 
-# prices feature normalization (min max)
-print('Prices')
-# prices_df['price_norm'] = prices_df['sell_price'] / prices_df.groupby(['store_id', 'item_id'])['sell_price'].transform('max')
-grid_df = grid_df.merge(prices_df, on=['store_id', 'item_id', 'wm_yr_wk'], how='left')
+# # prices feature normalization (min max)
+# print('Prices')
+# # prices_df['price_norm'] = prices_df['sell_price'] / prices_df.groupby(['store_id', 'item_id'])['sell_price'].transform('max')
+# grid_df = grid_df.merge(prices_df, on=['store_id', 'item_id', 'wm_yr_wk'], how='left')
 
 # add dates and events
 print('Calendar')
