@@ -1,16 +1,27 @@
 import greykite
 from prophet import Prophet
 import prophet.diagnostics
+import statsmodels.api as sm
+from statsmodels.tsa.arima.model import ARIMA
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import itertools
+import matplotlib.pyplot as plt
+import matplotlib
 from time import time
-from visualization import total_df, states, stores, stores_cat
+import ast
+# from visualization import total_df, states, stores, stores_cat
 
 
 TIME_HORIZON = 28
 END_TRAIN = 1913
+
+total_train_df = pd.read_csv('data\\hierarchy_df\\total_train_df.csv')
+total_test_df = pd.read_csv('data\\hierarchy_df\\total_test_df.csv')
+
+total_train_df['date'] = pd.to_datetime(total_train_df['date'])
+total_test_df['date'] = pd.to_datetime(total_test_df['date'])
 
 
 def fbprophet_train(train_df, time_horizon, end_train, path=None):
