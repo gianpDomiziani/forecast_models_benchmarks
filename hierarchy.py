@@ -8,6 +8,7 @@ TIME_HORIZON = 28
 DATA_PATH = 'data'
 
 train_df = pd.read_csv(f'{DATA_PATH}/preprocessed.csv')
+test_df = pd.read_csv(f'{DATA_PATH}/preprocessed.csv')
 
 feature_columns = ['date', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd', 'sales']
 train_df = train_df[feature_columns]
@@ -20,9 +21,13 @@ train_df = train_df[train_df['d'] <= END_TRAIN]
 total_df = train_df.groupby('date')['sales'].sum().to_frame().reset_index()
 # total_df.to_frame(name='sales').reset_index()
 print(total_df.tail())
+total_df.to_csv('data\\hierarchy_df\\total_train_df.csv')
 total_df.plot(x='date', y='sales', title='Total sales')
 plt.plot(total_df['date'], total_df['sales'])
 plt.show()
+
+total_test_df = test_df.groupby('date')['sales'].sum().to_frame().reset_index()
+total_test_df.to_csv('data\\hierarchy_df\\total_test_df.csv')
 
 # state level
 state_df = train_df.groupby(['date', 'state_id'])['sales'].sum().to_frame().reset_index()
@@ -45,6 +50,7 @@ plt.figure()
 stores = {}
 for store_id in tqdm(STORE_ID):
     stores[f'{store_id}'] = store_df[store_df['store_id'] == store_id]
+    states.get(f'{state_id}').to_csv(f'data\\hierarchy_df\\{state_id}_df.csv')
     plt.plot(stores.get(f'{store_id}')['date'], stores.get(f'{store_id}')['sales'])
 plt.legend(stores.keys())
 plt.show()
