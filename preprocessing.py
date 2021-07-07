@@ -1,16 +1,22 @@
+import os
+import sys
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 
-# load data
-print('Load Main Data')
-raw_dir = "D:\\Downloads\\"
-calendar_df = pd.read_csv(raw_dir + "calendar.csv")
-train_df = pd.read_csv(raw_dir + "sales_train_evaluation.csv")
-prices_df = pd.read_csv(raw_dir + "sell_prices.csv")
+import logging
+logging.basicConfig(stream=sys.stdout, format='',
+                level=logging.INFO, datefmt=None)
+logger = logging.getLogger('preprocessing')
 
-# print(calendar_df.head())
-# print(train_df.head())
-# print(prices_df.head())
+# load data
+logger.info('Load Main Data')
+DATA_PATH = Path('data')
+calendar_df = pd.read_csv(DATA_PATH / 'dataset/calendar.csv')
+train_df = pd.read_csv(DATA_PATH / 'dataset/sales_train_evaluation.csv')
+prices_df = pd.read_csv(DATA_PATH / 'dataset/sell_prices.csv')
+
 
 # variables
 TARGET = 'sales'
@@ -19,7 +25,7 @@ END_TRAIN = 1941-28  # total num of days is 1941, leave the last 28 out for test
 DAY_COLUMN = 'd'
 
 # create grid
-print('Create Grid')
+logger.info('Create Grid')
 # reformat train_df
 # instead of days in a horizontal orientation, make it vertical
 
@@ -32,7 +38,7 @@ grid_df = pd.melt(train_df,
 # print(grid_df.head(10))
 
 # generate holdout validation df
-print('Creating holdout validation dataframe')
+logger.info('Creating holdout validation dataframe')
 last_training_day = END_TRAIN
 end_val_day = END_TRAIN + TIME_HORIZON
 
@@ -49,7 +55,7 @@ grid_df['d'] = grid_df['d'].apply(lambda x: 'd_' + str(x))
 # print(holdout_df.head())
 
 # add rows for test (not sure if needed)
-print('Adding test days')
+logger.info('Adding test days')
 add_grid = pd.DataFrame()
 for i in range(1, TIME_HORIZON + 1):
     temp_df = train_df[index_columns]
@@ -74,7 +80,7 @@ def merge_by_concat(df1, df2, merge_on):
 
 
 # Release dates
-print('Release')
+logger.info('Release')
 release_df = prices_df.groupby(['store_id', 'item_id'])['wm_yr_wk'].agg(['min']).reset_index()
 release_df.columns = ['store_id', 'item_id', 'release']
 # print(release_df.head())
@@ -96,11 +102,11 @@ grid_df = grid_df[grid_df['wm_yr_wk'] >= grid_df['release']].reset_index(drop=Tr
 # grid_df = grid_df.merge(prices_df, on=['store_id', 'item_id', 'wm_yr_wk'], how='left')
 
 # add dates and events
-print('Calendar')
+logger.info('Calendar')
 # calendar_cols = ['date', 'd', 'event_name_1', 'event_type_1', 'event_name_2', 'event_type_2', 'snap_CA', 'snap_TX', 'snap_WI']
 calendar_cols = ['date', 'd']
 grid_df = grid_df.merge(calendar_df[calendar_cols], on="d", how="left")
 holdout_df = holdout_df.merge(calendar_df[calendar_cols], on="d", how="left")
 
-holdout_df.to_csv('holdout.csv')
-grid_df.to_csv("preprocessed.csv")
+holdout_df.to_csv(f'{DATA_PATH}/holdout.csv')
+grid_df.to_csv(f'{DATA_PATH}/preprocessed.csv')

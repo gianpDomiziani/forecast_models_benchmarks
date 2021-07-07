@@ -5,8 +5,9 @@ from tqdm import tqdm
 
 END_TRAIN = 1913
 TIME_HORIZON = 28
+DATA_PATH = 'data'
 
-train_df = pd.read_csv('preprocessed.csv')
+train_df = pd.read_csv(f'{DATA_PATH}/preprocessed.csv')
 
 feature_columns = ['date', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'd', 'sales']
 train_df = train_df[feature_columns]
