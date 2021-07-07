@@ -90,6 +90,100 @@ def fbprophet_predict(train_df, time_horizon, results_csv, path=None):
         forecast = forecast[['ds', 'yhat']]
         forecast.to_csv(path)
 
+        
+def arima_train(train_df, path=None):
+    train_df.index = pd.to_datetime(train_df['date'])
+    train_df = train_df.drop('date', axis=1)
+    del train_df['Unnamed: 0']
+    train_df = train_df.rename(columns={'sales': 'y'})
+
+    print(train_df.head())
+
+    p = d = q = range(0, 2)
+    pdq = list(itertools.product(p, d, q))
+
+    tuning_results = pd.DataFrame(columns=['pdq_params', 'seasonality', 'seasonal_pdq_params', 'AIC', 'fit_time'])
+
+    seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
+
+    warnings.filterwarnings("ignore")  # specify to ignore warning messages
+
+    for param in pdq:
+        mod = ARIMA(train_df,
+                    order=param,
+                    enforce_stationarity=False,
+                    enforce_invertibility=False)
+        start_time = time()
+        results = mod.fit()
+        end_time = time()
+        fit_time = end_time - start_time
+        tuning_results = tuning_results.append({'pdq_params': param,
+                                                'seasonality': False,
+                                                'seasonal_pdq_params': None,
+                                                'AIC': results.aic,
+                                                'fit_time': fit_time}, ignore_index=True)
+        print(f'ARIMA{param} - AIC:{results.aic}')
+
+        for param_seasonal in seasonal_pdq:
+            mod = sm.tsa.statespace.SARIMAX(train_df,
+                                            order=param,
+                                            seasonal_order=param_seasonal,
+                                            enforce_stationarity=False,
+                                            enforce_invertibility=False)
+
+            start_time = time()
+            results = mod.fit()
+            end_time = time()
+            fit_time = end_time - start_time
+            tuning_results = tuning_results.append({'pdq_params': param,
+                                                    'seasonality': True,
+                                                    'seasonal_pdq_params': param_seasonal,
+                                                    'AIC': results.aic,
+                                                    'fit_time': fit_time}, ignore_index=True)
+
+            print(f'SARIMA{param}x{param_seasonal}12 - AIC:{results.aic}')
+
+    if path is not None:
+        tuning_results.to_csv(path)
+
+
+def arima_predict(train_df, time_horizon, results_csv, path=None):
+    tuning_results = pd.read_csv(results_csv)
+    best_params = tuning_results[tuning_results.AIC == tuning_results.AIC.min()]
+    print(best_params)
+    best_params = best_params[['pdq_params', 'seasonality', 'seasonal_pdq_params']]
+    best_params = best_params.to_dict('records')[0]
+    print(best_params)
+
+    train_df.index = pd.to_datetime(train_df['date'])
+    train_df = train_df.drop('date', axis=1)
+    del train_df['Unnamed: 0']
+    train_df = train_df.rename(columns={'sales': 'y'})
+
+    if best_params.get('seasonality'):
+        mod = sm.tsa.statespace.SARIMAX(train_df,
+                                        order=ast.literal_eval(best_params.get('pdq_params')),
+                                        seasonal_order=ast.literal_eval(best_params.get('seasonal_pdq_params')),
+                                        enforce_stationarity=False,
+                                        enforce_invertibility=False)
+    else:
+        mod = ARIMA(train_df,
+                    order=ast.literal_eval(best_params.get('pdq_params')),
+                    enforce_stationarity=False,
+                    enforce_invertibility=False)
+
+    start_time = time()
+    results = mod.fit()
+    end_time = time()
+    fit_time = end_time - start_time
+    print(fit_time)
+
+    forecast = results.forecast(steps=time_horizon).to_frame().reset_index()
+    print(forecast)
+
+    if path is not None:
+        forecast.to_csv(path)
+        
 
 fbprophet_train(total_df, TIME_HORIZON, END_TRAIN, path='tuning_results\\total_level_dailyseasonailty_results.csv')
 
@@ -103,4 +197,7 @@ for state in states:
     fbprophet_train(state_df, TIME_HORIZON, END_TRAIN, path=f'tuning_results\\{state}_results.csv')
 
 
-
+arima_train(total_train_df, path='tuning_results\\total_level_arima.csv')
+arima_predict(total_train_df, TIME_HORIZON,
+              results_csv='tuning_results\\total_level_arima.csv',
+              path='predictions\\total_level_arima_predictions.csv')
