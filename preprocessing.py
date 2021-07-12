@@ -42,6 +42,7 @@ logger.info('Creating holdout validation dataframe')
 last_training_day = END_TRAIN
 end_val_day = END_TRAIN + TIME_HORIZON
 
+grid_df = grid_df[grid_df.d != 'id']
 grid_df['d'] = grid_df['d'].apply(lambda x: x[2:]).astype(np.int16)
 
 holdout_df = grid_df[(grid_df['d'] > last_training_day) & (grid_df['d'] <= end_val_day)][index_columns + [DAY_COLUMN, TARGET]]
